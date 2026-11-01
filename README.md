@@ -143,6 +143,7 @@ O formato final é **longo**: uma linha por `ano × etapa × município × rede`
 Projeto de portfólio de **Henrique Sakita**, professor de Ciências e Biologia em transição para dados. Une 12 anos de sala de aula à prática de Python, SQL e estatística para transformar dados públicos em decisões educacionais.
 
 - GitHub: [@henriquesakita](https://github.com/henriquesakita)
+- LinkedIn: [henrique-sakita](https://www.linkedin.com/in/henrique-sakita/)
 - Contato: [henriquesakita@gmail.com](mailto:henriquesakita@gmail.com)
 
 ## Licença
