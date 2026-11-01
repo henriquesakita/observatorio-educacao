@@ -44,9 +44,9 @@ Este projeto faz esse trabalho uma vez, de forma reprodutível, e entrega a aná
 
 ## Demo
 
-**▶ [Abrir o painel publicado](https://observatorio-educacao-ebxjkkb9icbfot8bakeedj.streamlit.app/)**
+**▶ [Abrir o painel publicado](https://observatorio-educacao.streamlit.app/)**
 
-[![Streamlit App](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://observatorio-educacao-ebxjkkb9icbfot8bakeedj.streamlit.app/)
+[![Streamlit App](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://observatorio-educacao.streamlit.app/)
 
 O painel roda no Streamlit Community Cloud direto do branch `main`: qualquer push
 atualiza a versão publicada.
