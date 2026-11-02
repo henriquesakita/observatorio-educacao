@@ -9,6 +9,12 @@ DATA_DIR = PROJECT_ROOT / "data"
 RAW_DIR = DATA_DIR / "raw"
 PROCESSED_DIR = DATA_DIR / "processed"
 PROCESSED_FILE = PROCESSED_DIR / "ideb_municipios.csv.gz"
+REFERENCE_DIR = DATA_DIR / "reference"
+
+# IDESP / Saresp (rede estadual de Sao Paulo).
+IDESP_PROCESSED_FILE = PROCESSED_DIR / "idesp_escolas.csv.gz"
+IDESP_METAS_FILE = PROCESSED_DIR / "idesp_metas.csv.gz"
+SARESP_PROCESSED_FILE = PROCESSED_DIR / "saresp_municipios.csv.gz"
 
 # Edicao mais recente divulgada pelo Inep (Saeb 2025).
 DEFAULT_YEAR = 2025
