@@ -63,14 +63,14 @@ O **IDESP** combina a proficiência dos alunos no **Saresp** com o fluxo escolar
 | --- | ---: | ---: | ---: |
 | Escolas com resultado em 2024 | 1.299 | 3.665 | — |
 | IDESP médio em 2024 (média simples) | **5,16** | **3,06** | — |
-| IDESP médio na última edição do EM (2022) | 4,55 | 3,22 | **2,08** |
+| IDESP médio em 2022 (última edição do EM) | 4,55 | 3,22 | **2,08** |
 | Variação vs primeira edição | **+1,93** (2007) | **+0,52** (2007) | **+0,67** (2007–2022) |
 | Escolas que atingiram a meta em 2024 | **52,9%** | **26,4%** | — |
 
 - Nos Anos Iniciais, **Teodoro Sampaio** tem o maior IDESP de 2024 (8,94) e **Cotia** o menor (3,08). Teodoro Sampaio também registra o maior avanço municipal desde 2007 (**+6,09**). Nos Anos Finais, **Vista Alegre do Alto** lidera (7,19), **Santo Expedito** fica no fim (1,61) e **Nova Castilho** é o maior ganho (**+4,17**).
 - Entre as diretorias de ensino, **Mirante do Paranapanema** tem o maior IDESP nos Anos Iniciais em 2024 (7,59) e **Santos** o menor (3,98).
 - O cumprimento das metas é muito desigual: em 2024, **52,9%** das escolas de Anos Iniciais atingiram a meta, mas apenas **26,4%** nos Anos Finais. Por diretoria, Franca chega a **88,2%** nos Anos Iniciais contra **22,2%** de Taboão da Serra; nos Anos Finais, Fernandópolis atinge **66,7%** e Jaboticabal apenas **8,7%**.
-- Em **2021**, primeiro ano da pandemia, somente **1,1%** das escolas de Anos Iniciais atingiram a meta — o IDESP médio caiu de 5,69 (2019) para 4,41. A recuperação foi parcial: em 2024 o valor chegou a 5,16, ainda abaixo de 2019.
+- Em **2021**, no retorno do Saresp após a suspensão de 2020, somente **1,1%** das escolas de Anos Iniciais atingiram a meta — o IDESP médio caiu de 5,69 (2019) para 4,41. A recuperação foi parcial: em 2024 o valor chegou a 5,16, ainda abaixo de 2019.
 - O **Saresp de 2025** (9º ano, rede estadual) registrou média de **248,5** em Língua Portuguesa e **270,9** em Matemática. As duas proficiências são fortemente correlacionadas entre municípios (**r = 0,905**, n = 506).
 - **IDESP e Ideb concordam** sobre o ranking municipal da rede estadual: em 2023, a correlação foi de **r = 0,829** nos Anos Finais (n = 492) e **r = 0,762** nos Anos Iniciais (n = 100).
 
