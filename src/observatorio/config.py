@@ -19,7 +19,23 @@ END_YEAR = YEARS[-1]
 STAGES = {
     "Anos Iniciais": "anos_iniciais",
     "Anos Finais": "anos_finais",
+    "Ensino Médio": "ensino_medio",
 }
+
+# Primeira edicao divulgada por municipio em cada etapa. O Ideb do ensino
+# medio passou a ter recorte municipal apenas em 2017.
+FIRST_YEAR_BY_STAGE = {
+    "anos_iniciais": 2005,
+    "anos_finais": 2005,
+    "ensino_medio": 2017,
+}
+
+
+def years_for(etapa: str) -> list[int]:
+    """Edicoes do Ideb disponiveis para uma etapa (rotulo ou chave interna)."""
+    stage_key = STAGES.get(etapa, etapa)
+    first_year = FIRST_YEAR_BY_STAGE.get(stage_key, START_YEAR)
+    return [year for year in YEARS if year >= first_year]
 
 NETWORKS = ["Pública", "Estadual", "Municipal", "Federal"]
 

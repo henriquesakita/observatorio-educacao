@@ -12,7 +12,6 @@ import streamlit as st
 
 from observatorio.config import (
     DEFAULT_YEAR,
-    END_YEAR,
     PROCESSED_FILE,
     REFERENCE_IDEB,
     REGION_COLORS,
@@ -20,9 +19,8 @@ from observatorio.config import (
     SOURCE_NAME,
     SOURCE_URL,
     STAGES,
-    START_YEAR,
     UF_NAMES,
-    YEARS,
+    years_for,
 )
 from observatorio.metrics import (
     biggest_gains,
@@ -161,8 +159,9 @@ def render_hero() -> None:
         <div class="hero">
             <div class="kicker">Dados públicos · Educação básica</div>
             <h1>Observatório da Educação</h1>
-            <p>Como a aprendizagem e a aprovação evoluíram nos 5.570 municípios brasileiros?
-            Um recorte do Ideb de 2005 a 2025, por etapa, rede e território.</p>
+            <p>Como a aprendizagem e a aprovação evoluíram nos municípios brasileiros?
+            Um recorte do Ideb de 2005 a 2025, por etapa, rede e território — com o
+            ensino médio a partir de 2017.</p>
             <div class="source">Fonte: INEP/Saeb — planilhas de divulgação do Ideb municipal (edição 2025)</div>
         </div>
         """,
@@ -173,16 +172,22 @@ def render_hero() -> None:
 def render_sidebar(data: pd.DataFrame) -> dict:
     st.sidebar.markdown("### Filtros")
     etapa = st.sidebar.radio("Etapa", list(STAGES), index=0)
+    anos = years_for(etapa)
 
     disponiveis = [n for n in ["Pública", "Estadual", "Municipal", "Federal"] if n in set(data["rede"])]
     rede = st.sidebar.selectbox("Rede de ensino", disponiveis, index=0)
 
     ano = st.sidebar.select_slider(
         "Ano",
-        options=YEARS,
-        value=DEFAULT_YEAR,
+        options=anos,
+        value=anos[-1],
         format_func=lambda y: str(y),
     )
+    if etapa == "Ensino Médio":
+        st.sidebar.caption(
+            "O Ideb do ensino médio tem recorte municipal a partir de 2017. "
+            "Nas edições anteriores o Inep divulga apenas o resultado nacional."
+        )
 
     uf_options = ["Todos"] + sorted(data["uf"].dropna().unique())
     uf_label = st.sidebar.selectbox(
@@ -200,12 +205,12 @@ def render_sidebar(data: pd.DataFrame) -> dict:
     )
     st.sidebar.markdown(f"[Fonte oficial]({SOURCE_URL})")
 
-    return {"etapa": etapa, "rede": rede, "ano": ano, "uf": uf}
+    return {"etapa": etapa, "rede": rede, "ano": ano, "anos": anos, "inicio": anos[0], "uf": uf}
 
 
-def render_kpis(historico: pd.DataFrame, atual: pd.DataFrame, ano: int, uf: str | None) -> None:
+def render_kpis(historico: pd.DataFrame, atual: pd.DataFrame, ano: int, uf: str | None, inicio: int) -> None:
     info = summary(atual)
-    base = historico[historico["ano"] == START_YEAR]
+    base = historico[historico["ano"] == inicio]
     base_mean = base["ideb"].mean() if not base.empty else None
     variacao = None if info["media"] is None or base_mean is None else info["media"] - base_mean
 
@@ -214,7 +219,7 @@ def render_kpis(historico: pd.DataFrame, atual: pd.DataFrame, ano: int, uf: str 
     c2.metric(
         f"Ideb médio em {ano}",
         fmt(info["media"]),
-        delta=None if variacao is None else f"{variacao:+.2f} vs {START_YEAR}".replace(".", ","),
+        delta=None if variacao is None else f"{variacao:+.2f} vs {inicio}".replace(".", ","),
         help="Média simples do Ideb entre os municípios do recorte.",
     )
     c3.metric(
@@ -240,7 +245,7 @@ def render_kpis(historico: pd.DataFrame, atual: pd.DataFrame, ano: int, uf: str 
         if base_mean is None
         else " Isso representa <strong>"
         + f"{variacao:+.2f}".replace(".", ",")
-        + f"</strong> em relação a {START_YEAR}."
+        + f"</strong> em relação a {inicio}."
     )
     st.markdown(
         f"""
@@ -279,9 +284,9 @@ def render_panorama(data: pd.DataFrame, filters: dict) -> None:
                 labels={"ano": "Edição do Ideb", "media": "Ideb médio", "regiao": "Região"},
             )
         else:
-            nacional = evolution_national(historico)
+            serie = evolution_national(historico)
             fig = px.line(
-                nacional,
+                serie,
                 x="ano",
                 y="media",
                 markers=True,
@@ -291,7 +296,9 @@ def render_panorama(data: pd.DataFrame, filters: dict) -> None:
             fig.update_layout(title=f"Média dos municípios de {uf}")
         fig.update_traces(marker=dict(size=7))
         style_fig(fig, height=400)
-        fig.update_yaxes(range=[3.5, 7.5])
+        valores = serie["media"].dropna()
+        if not valores.empty:
+            fig.update_yaxes(range=[max(0, valores.min() - 0.5), min(10, valores.max() + 0.5)])
         st.plotly_chart(fig, width="stretch", config={"displayModeBar": False})
 
     with col_b:
@@ -401,23 +408,30 @@ def render_panorama(data: pd.DataFrame, filters: dict) -> None:
 
 
 def render_ranking(data: pd.DataFrame, filters: dict) -> None:
-    etapa, rede, ano, uf = filters["etapa"], filters["rede"], filters["ano"], filters["uf"]
+    etapa, rede, ano, uf, inicio = (
+        filters["etapa"],
+        filters["rede"],
+        filters["ano"],
+        filters["uf"],
+        filters["inicio"],
+    )
     atual = scope(data, etapa, rede, ano=ano, uf=uf).dropna(subset=["ideb"])
 
+    rotulo_ganhos = f"Maiores avanços desde {inicio}"
     tipo = st.radio(
         "O que mostrar",
-        ["Melhores Idebs", "Menores Idebs", "Maiores avanços desde 2005"],
+        ["Melhores Idebs", "Menores Idebs", rotulo_ganhos],
         horizontal=True,
         label_visibility="collapsed",
     )
 
-    if tipo == "Maiores avanços desde 2005":
-        tabela = biggest_gains(scope(data, etapa, rede, uf=uf), START_YEAR, ano, n=15)
+    if tipo == rotulo_ganhos:
+        tabela = biggest_gains(scope(data, etapa, rede, uf=uf), inicio, ano, n=15)
         if tabela.empty:
             st.info("Não há municípios com resultado nos dois anos comparados.")
             return
         exibir = tabela.rename(
-            columns={"municipio": "Município", "uf": "UF", "inicio": str(START_YEAR), "fim": str(ano), "ganho": "Ganho"}
+            columns={"municipio": "Município", "uf": "UF", "inicio": str(inicio), "fim": str(ano), "ganho": "Ganho"}
         )
         fig = px.bar(
             tabela.sort_values("ganho"),
@@ -433,7 +447,7 @@ def render_ranking(data: pd.DataFrame, filters: dict) -> None:
         fig.update_layout(coloraxis_showscale=False)
         eixo_x = [min(-0.5, float(tabela["ganho"].min()) - 0.3), float(tabela["ganho"].max()) + 0.8]
         st.markdown(
-            f'<div class="section-sub">Municípios com maior variação entre {START_YEAR} e {ano} '
+            f'<div class="section-sub">Municípios com maior variação entre {inicio} e {ano} '
             "(apenas quem tem resultado nos dois anos).</div>",
             unsafe_allow_html=True,
         )
@@ -469,13 +483,19 @@ def render_ranking(data: pd.DataFrame, filters: dict) -> None:
     st.download_button(
         "Baixar recorte em CSV",
         data=csv,
-        file_name=f"ideb_{etapa.lower().replace(' ', '_')}_{rede.lower()}_{ano}.csv",
+        file_name=f"ideb_{STAGES[etapa]}_{rede.lower()}_{ano}.csv",
         mime="text/csv",
     )
 
 
 def render_municipio(data: pd.DataFrame, filters: dict) -> None:
-    etapa, rede, ano, uf = filters["etapa"], filters["rede"], filters["ano"], filters["uf"]
+    etapa, rede, ano, uf, inicio_ano = (
+        filters["etapa"],
+        filters["rede"],
+        filters["ano"],
+        filters["uf"],
+        filters["inicio"],
+    )
     base = scope(data, etapa, rede, uf=uf)
 
     opcoes = (
@@ -511,8 +531,8 @@ def render_municipio(data: pd.DataFrame, filters: dict) -> None:
     regiao = serie["regiao"].iloc[0]
     linha = serie[serie["ano"] == ano]
     ideb_ano = linha["ideb"].iloc[0] if not linha.empty else None
-    inicio = serie[serie["ano"] == START_YEAR]["ideb"]
-    variacao = None if inicio.empty or pd.isna(ideb_ano) else ideb_ano - inicio.iloc[0]
+    inicio_serie = serie[serie["ano"] == inicio_ano]["ideb"]
+    variacao = None if inicio_serie.empty or pd.isna(ideb_ano) else ideb_ano - inicio_serie.iloc[0]
 
     ranking_uf = (
         scope(data, etapa, rede, ano=ano, uf=uf_cidade)
@@ -525,7 +545,7 @@ def render_municipio(data: pd.DataFrame, filters: dict) -> None:
 
     c1, c2, c3 = st.columns(3)
     c1.metric(f"Ideb em {ano}", fmt(ideb_ano))
-    c2.metric(f"Variação {START_YEAR}–{ano}", "—" if variacao is None else f"{variacao:+.2f}".replace(".", ","))
+    c2.metric(f"Variação {inicio_ano}–{ano}", "—" if variacao is None else f"{variacao:+.2f}".replace(".", ","))
     c3.metric(f"Posição em {uf_cidade}", posicao_txt)
 
     st.markdown(
@@ -565,7 +585,10 @@ def render_municipio(data: pd.DataFrame, filters: dict) -> None:
     )
     fig.add_hline(y=REFERENCE_IDEB, line_dash="dot", line_color="#e2e8f0")
     style_fig(fig, height=430)
-    fig.update_yaxes(range=[2.5, 8.5])
+    valores = serie[["ideb", "media_uf", "media_regiao", "media_brasil"]].to_numpy().ravel()
+    valores = valores[~pd.isna(valores)]
+    if valores.size:
+        fig.update_yaxes(range=[max(0, valores.min() - 0.5), min(10, valores.max() + 0.5)])
     fig.update_layout(title="Trajetória do município e referências")
     st.plotly_chart(fig, width="stretch", config={"displayModeBar": False})
 
@@ -600,7 +623,9 @@ def render_municipio(data: pd.DataFrame, filters: dict) -> None:
         st.plotly_chart(fig2, width="stretch", config={"displayModeBar": False})
 
 
-def render_metodo(data: pd.DataFrame) -> None:
+def render_metodo(data: pd.DataFrame, filters: dict) -> None:
+    etapa = filters["etapa"]
+    anos = filters["anos"]
     st.markdown(
         f"""
         ### De onde vêm os dados
@@ -631,6 +656,8 @@ def render_metodo(data: pd.DataFrame) -> None:
           contagem, as análises usam uma rede por vez.
         - O Inep não divulga o Ideb quando há **poucos participantes** no Saeb ou quando a
           escola solicita não divulgação. Por isso o número de municípios varia entre anos.
+        - O Ideb do **ensino médio** tem recorte municipal apenas a partir de **2017**; as
+          edições anteriores trazem somente o resultado nacional.
         - O Ideb de **2021** reflete o contexto da pandemia de Covid-19 e deve ser lido com
           cautela.
         - O primeiro ciclo de metas terminou em 2021; as edições seguintes **não têm metas
@@ -651,7 +678,7 @@ def render_metodo(data: pd.DataFrame) -> None:
     st.caption(
         f"Base carregada: {fmt_int(len(data))} linhas · "
         f"{fmt_int(data['cod_municipio'].nunique())} municípios · "
-        f"edições de {START_YEAR} a {END_YEAR} · "
+        f"etapa selecionada: {etapa.lower()}, edições de {anos[0]} a {anos[-1]} · "
         f"última edição disponível: {DEFAULT_YEAR}."
     )
 
@@ -673,7 +700,7 @@ def main() -> None:
     historico = scope(data, filters["etapa"], filters["rede"], uf=filters["uf"])
     atual = scope(data, filters["etapa"], filters["rede"], ano=filters["ano"], uf=filters["uf"])
 
-    render_kpis(historico, atual, filters["ano"], filters["uf"])
+    render_kpis(historico, atual, filters["ano"], filters["uf"], filters["inicio"])
 
     abas = st.tabs(["Panorama", "Ranking", "Município", "Método"])
     with abas[0]:
@@ -683,7 +710,7 @@ def main() -> None:
     with abas[2]:
         render_municipio(data, filters)
     with abas[3]:
-        render_metodo(data)
+        render_metodo(data, filters)
 
     st.markdown(
         f'<div class="footer">Dados: <a href="{SOURCE_URL}" target="_blank">{SOURCE_NAME}</a> · '

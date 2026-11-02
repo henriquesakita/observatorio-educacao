@@ -8,15 +8,27 @@ tecnicos (``SG_UF``, ``CO_MUNICIPIO``...) e mantem apenas municipios reais.
 from __future__ import annotations
 
 import logging
+import re
 from pathlib import Path
 
 import pandas as pd
 
-from .config import STAGES, UF_CODES, UF_TO_REGION, YEARS
+from .config import STAGES, UF_CODES, UF_TO_REGION
 
 logger = logging.getLogger(__name__)
 
 HEADER_ROW = 9
+OBSERVED_YEAR_PATTERN = re.compile(r"^VL_OBSERVADO_(\d{4})$")
+
+
+def _observed_years(columns: pd.Index) -> list[int]:
+    """Detecta as edicoes presentes na planilha pelas colunas de Ideb."""
+    years = {
+        int(match.group(1))
+        for column in columns
+        if (match := OBSERVED_YEAR_PATTERN.match(str(column)))
+    }
+    return sorted(years)
 
 NUMERIC_COLUMNS = {
     "ideb": "VL_OBSERVADO_{year}",
@@ -68,10 +80,7 @@ def read_ideb_workbook(path: str | Path, etapa: str) -> pd.DataFrame:
     raw["REDE"] = raw["REDE"].astype(str).str.strip()
 
     frames: list[pd.DataFrame] = []
-    for year in YEARS:
-        if f"VL_OBSERVADO_{year}" not in raw.columns:
-            continue
-
+    for year in _observed_years(raw.columns):
         frame = pd.DataFrame(
             {
                 "ano": year,

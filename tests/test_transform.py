@@ -3,8 +3,8 @@ from __future__ import annotations
 import pandas as pd
 import pytest
 
-from observatorio.config import PROCESSED_FILE, UF_CODES
-from observatorio.transform import _to_number
+from observatorio.config import PROCESSED_FILE, UF_CODES, years_for
+from observatorio.transform import _observed_years, _to_number
 
 
 def test_to_number_handles_dash_and_comma() -> None:
@@ -15,6 +15,19 @@ def test_to_number_handles_dash_and_comma() -> None:
     assert result.iloc[2] == pytest.approx(6.2)
     assert pd.isna(result.iloc[3])
     assert pd.isna(result.iloc[4])
+
+
+def test_observed_years_reads_columns() -> None:
+    columns = pd.Index(
+        ["SG_UF", "VL_OBSERVADO_2017", "VL_OBSERVADO_2025", "VL_NOTA_MEDIA_2023"]
+    )
+    assert _observed_years(columns) == [2017, 2025]
+
+
+def test_years_for_stage_respects_coverage() -> None:
+    assert years_for("Anos Iniciais")[0] == 2005
+    assert years_for("Anos Finais")[0] == 2005
+    assert years_for("Ensino Médio") == [2017, 2019, 2021, 2023, 2025]
 
 
 @pytest.fixture(scope="module")
@@ -42,7 +55,14 @@ def test_processed_schema(processed: pd.DataFrame) -> None:
         "meta",
     }
     assert expected.issubset(processed.columns)
-    assert set(processed["etapa"]) == {"Anos Iniciais", "Anos Finais"}
+    assert set(processed["etapa"]) == {"Anos Iniciais", "Anos Finais", "Ensino Médio"}
+
+
+def test_ensino_medio_starts_in_2017(processed: pd.DataFrame) -> None:
+    em = processed[processed["etapa"] == "Ensino Médio"]
+    assert not em.empty
+    assert em["ano"].min() == 2017
+    assert set(em["ano"]) == {2017, 2019, 2021, 2023, 2025}
 
 
 def test_processed_has_no_duplicate_keys(processed: pd.DataFrame) -> None:
