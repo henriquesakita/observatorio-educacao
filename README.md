@@ -78,7 +78,7 @@ O **IDESP** combina a proficiência dos alunos no **Saresp** com o fluxo escolar
 
 ## Demo
 
-**▶ [Abrir o painel publicado](https://observatorio-educacao.streamlit.app/)**
+**[Abrir o painel publicado](https://observatorio-educacao.streamlit.app/)**
 
 [![Streamlit App](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://observatorio-educacao.streamlit.app/)
 
