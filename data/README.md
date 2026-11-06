@@ -4,12 +4,12 @@
 
 Recorte tratado das planilhas oficiais do Ideb municipal (INEP/Saeb), edição 2025.
 
-- **Linhas:** 281.963
-- **Municípios:** 5.570
+- **Linhas:** 338.900
+- **Municípios:** 5.571
 - **Edições:** 2005 a 2025 (anos ímpares)
-- **Etapas:** Anos Iniciais e Anos Finais
+- **Etapas:** Anos Iniciais, Anos Finais e Ensino Médio (a partir de 2017)
 - **Redes:** Pública, Estadual, Municipal e Federal
-- **Tamanho:** ~5,6 MB
+- **Tamanho:** ~6,6 MB
 
 ### Colunas
 

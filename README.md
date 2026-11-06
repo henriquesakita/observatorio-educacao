@@ -5,7 +5,11 @@
 [![Streamlit](https://img.shields.io/badge/dashboard-Streamlit-FF4B4B?logo=streamlit&logoColor=white)](https://streamlit.io/)
 [![License: MIT](https://img.shields.io/badge/license-MIT-0f766e.svg)](LICENSE)
 
+**Duas bases públicas, 5.571 municípios e 339 mil registros do Ideb, além de 5.424 escolas paulistas no IDESP/Saresp.**
+
 Dashboard em Python que transforma planilhas públicas da educação em uma leitura navegável da aprendizagem. O projeto baixa os arquivos oficiais do **Inep** e da **Seduc-SP**, trata os dados com pandas e apresenta séries históricas, rankings e comparações por município, escola, etapa, rede e território.
+
+`Python` `pandas` `Streamlit` `Plotly` `pytest` `GitHub Actions`
 
 Duas bases convivem no mesmo painel:
 
